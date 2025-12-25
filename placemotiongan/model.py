@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 
 class Generator(nn.Module):
-    """Minimal GAN generator. 実際のネットワーク構造は notebook から移植してください。"""
-
+    """
+    Generator network for PlaceEmotion-GAN.
+    Maps latent variables to cultural-emotional feature representations.
+    """
+    
     def __init__(self, latent_dim: int, output_dim: int):
         super().__init__()
         self.net = nn.Sequential(
