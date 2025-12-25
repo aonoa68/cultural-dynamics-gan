@@ -18,8 +18,9 @@ import csv
 from pathlib import Path
 import numpy as np
 
-from lambda_scheduler import make_scheduler
-from losses import tradeoff_loss, LossConfig
+from placemotiongan.scheduler import make_scheduler
+from placemotiongan.losses import tradeoff_loss, LossConfig
+
 
 
 def simulate_training(
