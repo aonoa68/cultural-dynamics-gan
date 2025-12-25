@@ -1,86 +1,156 @@
-from dataclasses import dataclass
-from typing import Callable, Optional
+# train.py
+# -*- coding: utf-8 -*-
+"""
+Minimal-yet-solid training loop (simulation) for PlaceEmotion-GAN JOSS package.
+- Reproduces λ scheduling dynamics over T steps.
+- Generates dummy adv_loss and feature_reward with controlled stochasticity.
+- Logs to CSV; optionally saves PNG curves if matplotlib is available.
 
-import torch
-from torch import optim
-from torch.utils.data import DataLoader, TensorDataset
+CLI Examples:
+    python train.py --lambda-kind linear
+    python train.py --lambda-kind logistic --lambda-sharpness 12 --lambda-window-portion 0.05
+    python train.py --lambda-kind delayed  --total-steps 400 --reach-portion 0.30
+"""
 
-from .model import Generator, Discriminator
-from .scheduler import LambdaScheduler
-from .config import TrainingConfig
+from __future__ import annotations
+import argparse
+import csv
+from pathlib import Path
+import numpy as np
 
-@dataclass
-class TrainingState:
-    g_losses: list
-    d_losses: list
-    lambdas: list
+from lambda_scheduler import make_scheduler
+from losses import tradeoff_loss, LossConfig
 
 
-class Trainer:
-    """High-level training loop for PlaceEmotion-GAN."""
+def simulate_training(
+    total_steps: int = 400,
+    lambda_kind: str = "linear",
+    reach_portion: float = 0.30,
+    lambda_window_portion: float = 0.05,
+    lambda_sharpness: float = 12.0,
+    seed: int = 42,
+    outdir: str = "results/run_linear",
+    beta: float = 0.10
+):
+    """
+    Simulate GAN learning dynamics with a paper-consistent loss formulation.
+    Returns a dict of arrays for plotting/analysis and writes CSV logs.
+    """
+    rng = np.random.default_rng(seed)
+    out = Path(outdir)
+    out.mkdir(parents=True, exist_ok=True)
 
-    def __init__(
-        self,
-        config: TrainingConfig,
-        data: torch.Tensor,
-        lambda_scheduler: Optional[LambdaScheduler] = None,
-    ):
-        self.config = config
-        self.device = torch.device(config.device if torch.cuda.is_available() else "cpu")
+    # λ scheduler
+    sched = make_scheduler(
+        total_steps=total_steps,
+        reach_portion=reach_portion,
+        kind=lambda_kind,
+        window_portion=lambda_window_portion,
+        sharpness=lambda_sharpness
+    )
 
-        self.dataset = TensorDataset(data)
-        self.loader = DataLoader(self.dataset, batch_size=config.batch_size, shuffle=True)
+    # Initialize “latent” process states for adv_loss & feature_reward
+    # adv_loss starts higher and tends to decrease (with noise)
+    adv = 0.80 + 0.05 * rng.standard_normal()
+    # feature_reward starts low and tends to increase (with noise)
+    rew = 0.10 + 0.03 * rng.standard_normal()
 
-        input_dim = data.shape[1]
-        self.G = Generator(config.latent_dim, input_dim).to(self.device)
-        self.D = Discriminator(input_dim).to(self.device)
+    # Time constants (heuristics to yield pleasant curves)
+    adv_decay = 0.0035
+    rew_rise = 0.0040
 
-        self.opt_G = optim.Adam(self.G.parameters(), lr=config.lr_generator, betas=(0.5, 0.999))
-        self.opt_D = optim.Adam(self.D.parameters(), lr=config.lr_discriminator, betas=(0.5, 0.999))
+    logs = []
+    loss_cfg = LossConfig(beta=beta)
 
-        total_steps = config.epochs * len(self.loader)
-        self.lambda_scheduler = lambda_scheduler or LambdaScheduler(total_steps, config.lambda_schedule)
-        self.bce = torch.nn.BCELoss()
+    for t in range(total_steps):
+        lam = sched(t)
 
-    def train(self) -> TrainingState:
-        step = 0
-        g_losses, d_losses, lambdas = [], [], []
+        # Stochastic dynamics:
+        # - adv_loss decays but with noise & small rebounds
+        adv_noise = 0.02 * rng.standard_normal()
+        adv = max(0.0, adv * (1.0 - adv_decay) + adv_noise)
+        # - feature reward grows then saturates a bit
+        rew_noise = 0.02 * rng.standard_normal()
+        rew = max(0.0, rew + rew_rise * (1.0 - min(1.0, rew)) + rew_noise)
 
-        for epoch in range(self.config.epochs):
-            for (x_real,) in self.loader:
-                x_real = x_real.to(self.device)
-                bsz = x_real.size(0)
+        total = tradeoff_loss(adv, rew, lam, loss_cfg)
 
-                # 1. Update D
-                self.opt_D.zero_grad()
-                z = torch.randn(bsz, self.config.latent_dim, device=self.device)
-                x_fake = self.G(z).detach()
+        logs.append({
+            "step": t,
+            "lambda": lam,
+            "adv_loss": adv,
+            "feature_reward": rew,
+            "total_loss": total
+        })
 
-                y_real = torch.ones(bsz, 1, device=self.device)
-                y_fake = torch.zeros(bsz, 1, device=self.device)
+    # CSV save
+    csv_path = out / f"training_{lambda_kind}_T{total_steps}_p{int(100*reach_portion)}.csv"
+    with csv_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["step", "lambda", "adv_loss", "feature_reward", "total_loss"])
+        w.writeheader()
+        w.writerows(logs)
 
-                d_real = self.D(x_real)
-                d_fake = self.D(x_fake)
+    # Optional plotting
+    try:
+        import matplotlib.pyplot as plt
+        xs = [r["step"] for r in logs]
+        ys_lambda = [r["lambda"] for r in logs]
+        ys_adv = [r["adv_loss"] for r in logs]
+        ys_rew = [r["feature_reward"] for r in logs]
+        ys_total = [r["total_loss"] for r in logs]
 
-                loss_D = self.bce(d_real, y_real) + self.bce(d_fake, y_fake)
-                loss_D.backward()
-                self.opt_D.step()
+        # λ curve
+        plt.figure()
+        plt.plot(xs, ys_lambda, label="lambda")
+        plt.title(f"Lambda ({lambda_kind})")
+        plt.xlabel("step")
+        plt.ylabel("lambda")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(out / f"lambda_{lambda_kind}.png", dpi=160)
+        plt.close()
 
-                # 2. Update G
-                self.opt_G.zero_grad()
-                z = torch.randn(bsz, self.config.latent_dim, device=self.device)
-                x_fake = self.G(z)
-                d_fake = self.D(x_fake)
+        # Loss/Reward curves
+        plt.figure()
+        plt.plot(xs, ys_total, label="total_loss")
+        plt.plot(xs, ys_adv, label="adv_loss")
+        plt.plot(xs, ys_rew, label="feature_reward")
+        plt.title(f"Training dynamics ({lambda_kind})")
+        plt.xlabel("step")
+        plt.ylabel("value")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(out / f"dynamics_{lambda_kind}.png", dpi=160)
+        plt.close()
+    except Exception as e:
+        print("[WARN] matplotlib not available or plotting failed:", e)
 
-                lam = float(self.lambda_scheduler(step))
-                loss_G = self.bce(d_fake, y_real)  # ここに lam を絡めた正則化項などを追加
-                loss_G.backward()
-                self.opt_G.step()
+    print(f"[{lambda_kind}] T={total_steps}, reach={reach_portion} → CSV: {csv_path}")
+    return logs, str(csv_path)
 
-                g_losses.append(loss_G.item())
-                d_losses.append(loss_D.item())
-                lambdas.append(lam)
 
-                step += 1
+def main():
+    ap = argparse.ArgumentParser(description="PlaceEmotion-GAN λ-scheduling simulation")
+    ap.add_argument("--total-steps", type=int, default=400)
+    ap.add_argument("--reach-portion", type=float, default=0.30)
+    ap.add_argument("--lambda-kind", type=str, default="linear", choices=["linear", "logistic", "delayed"])
+    ap.add_argument("--lambda-window-portion", type=float, default=0.05)
+    ap.add_argument("--lambda-sharpness", type=float, default=12.0)
+    ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--beta", type=float, default=0.10)
+    ap.add_argument("--outdir", type=str, default="results/run_linear")
+    args = ap.parse_args()
 
-        return TrainingState(g_losses=g_losses, d_losses=d_losses, lambdas=lambdas)
+    simulate_training(
+        total_steps=args.total_steps,
+        lambda_kind=args.lambda_kind,
+        reach_portion=args.reach_portion,
+        lambda_window_portion=args.lambda_window_portion,
+        lambda_sharpness=args.lambda_sharpness,
+        seed=args.seed,
+        outdir=args.outdir,
+        beta=args.beta
+    )
+
+if __name__ == "__main__":
+    main()
