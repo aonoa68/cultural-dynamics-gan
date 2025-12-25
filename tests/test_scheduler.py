@@ -1,6 +1,6 @@
-from placemotiongan.scheduler import LambdaScheduler
+# tests/test_scheduler.py
+from placemotiongan.scheduler import make_scheduler
 
-def test_linear_scheduler_increases():
-    sched = LambdaScheduler(total_steps=10, mode="linear")
-    vals = [sched(i) for i in range(11)]
-    assert vals[0] <= vals[-1]
+def test_lambda_reaches_one():
+    sched = make_scheduler(total_steps=100, reach_portion=0.3, kind="linear")
+    assert abs(sched(30) - 1.0) < 1e-6
