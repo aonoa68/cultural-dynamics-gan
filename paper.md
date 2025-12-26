@@ -42,7 +42,7 @@ often remains opaque due to tightly coupled implementations and implicit
 optimization dynamics.
 In particular, many existing implementations obscure the temporal trade-off
 between exploration and exploitation that is central to theories of cultural
-evolution and niche construction [@boyd1985culture; @odling2003niche].
+evolution [@mesoudi2011cultural] and niche construction [@boyd1985culture; @odling2003niche].
 
 PlaceEmotion-GAN addresses this gap by providing a lightweight, modular, and
 theory-aligned software framework in which the temporal structure of learning is
@@ -86,7 +86,9 @@ random seeds.
 ## λ-scheduling
 
 A central contribution of the software is the explicit implementation of
-λ-scheduling as a first-class component.
+λ-scheduling as a first-class component. This approach is inspired by 
+research on the trade-off between objective-driven optimization and 
+open-ended exploration [@lehman2011abandon].
 The scheduler returns a value λ(t) ∈ [0, 1] at each training step, controlling
 the balance between adversarial pressure and feature reward.
 Three scheduling shapes are provided:
@@ -94,9 +96,6 @@ Three scheduling shapes are provided:
 - Linear: monotonic increase toward λ = 1
 - Logistic: sigmoidal transition with adjustable sharpness
 - Delayed: an initial plateau followed by a rapid transition
-
-These schedules enable controlled experiments on how the timing of structural
-constraints influences learning dynamics.
 
 ## Loss formulation
 
@@ -110,6 +109,9 @@ where \(L_{\text{adv}}\) is the adversarial loss, \(R\) is a feature-based rewar
 and \(\beta\) controls the relative scale of the reward term.
 This formulation directly reflects theoretical assumptions about trade-offs
 between exploratory learning and structured cultural adaptation.
+These schedules enable controlled experiments on how the timing of structural
+constraints influences learning dynamics, connecting to broader questions 
+about open-endedness in evolutionary systems [@stanley2017openendedness].
 
 ## Reproducibility and usage
 
