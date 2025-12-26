@@ -8,7 +8,6 @@ Implements 3 shapes: linear / logistic / delayed, with 30% reach-to-1.0 default.
 from __future__ import annotations
 import math
 from dataclasses import dataclass
-from placemotiongan.scheduler import LambdaScheduler, LambdaConfig, make_scheduler
 
 
 @dataclass
