@@ -8,10 +8,10 @@ tags:
   - simulation
 authors:
   - name: Ayaka Onohara
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0004-3082-3267
     affiliation: 1
 affiliations:
-  - name: Hokusei Gakuen University
+  - name: Rikkyo University
     index: 1
 date: 2025-01-01
 bibliography: references.bib
@@ -36,13 +36,13 @@ learning dynamics.
 
 # Statement of need
 
-Generative adversarial networks (GANs) have been widely adopted as flexible
+Generative adversarial networks (GANs) [@goodfellow2014generative]　have been widely adopted as flexible
 models of learning and adaptation, but their use in cultural and social modeling
 often remains opaque due to tightly coupled implementations and implicit
 optimization dynamics.
 In particular, many existing implementations obscure the temporal trade-off
 between exploration and exploitation that is central to theories of cultural
-evolution and niche construction.
+evolution and niche construction [@boyd1985culture; @odling2003niche].
 
 PlaceEmotion-GAN addresses this gap by providing a lightweight, modular, and
 theory-aligned software framework in which the temporal structure of learning is
@@ -51,6 +51,15 @@ The software is designed for researchers in cultural evolution, computational
 social science, and emotion modeling who require transparent and reproducible
 tools for investigating how learning dynamics depend on time-dependent
 constraints rather than raw model capacity.
+
+# Comparison with related software
+
+PlaceEmotion-GAN differs from general-purpose GAN libraries (e.g., 
+PyTorch-GAN) in its explicit focus on theoretical exploration rather 
+than image generation. While agent-based cultural evolution simulators 
+such as ... focus on ..., this package provides an adversarial 
+framework that models the tension between exploration and exploitation 
+in learning dynamics.
 
 # Software description
 
@@ -108,6 +117,13 @@ All core functionality can be accessed via both a Python API and a command-line
 interface.
 CSV logs and diagnostic plots are automatically generated to facilitate further
 analysis.
+
+# Ongoing research
+
+The framework is currently being applied to investigate emotional 
+dynamics in cultural transmission contexts, with preliminary results 
+to be presented at the Workshop on Cultural Transmission Processes 
+(WCTP 2025).
 
 # Acknowledgements
 
