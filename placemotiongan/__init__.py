@@ -3,8 +3,14 @@ placemotiongan: GAN-based model for cultural dynamics and emotional niche constr
 """
 
 from .model import Generator, Discriminator
-from .scheduler import LambdaScheduler
-from .train import Trainer
+from .scheduler import LambdaScheduler, LambdaConfig, make_scheduler
+from .train import simulate_training
 
-__all__ = ["Generator", "Discriminator", "LambdaScheduler", "Trainer"]
-__version__ = "1.0.0"
+__all__ = [
+    "Generator",
+    "Discriminator",
+    "LambdaScheduler",
+    "LambdaConfig",
+    "make_scheduler",
+    "simulate_training",
+]
