@@ -27,3 +27,6 @@ Repository = "https://github.com/aonoa68/cultural-dynamics-gan"
 
 [project.scripts]
 placemotiongan = "placemotiongan.cli:main"
+
+[tool.setuptools]
+packages = ["placemotiongan"]
