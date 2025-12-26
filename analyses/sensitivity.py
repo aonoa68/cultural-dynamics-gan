@@ -12,7 +12,8 @@ Outputs:
 from __future__ import annotations
 import csv
 from pathlib import Path
-from train import simulate_training
+from placemotiongan.train import simulate_training
+
 
 def run_sensitivity(
     total_steps: int = 400,
