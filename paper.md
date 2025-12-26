@@ -36,7 +36,7 @@ learning dynamics.
 
 # Statement of need
 
-Generative adversarial networks (GANs) [@goodfellow2014generative]　have been widely adopted as flexible
+Generative adversarial networks (GANs) [@goodfellow2014generative] have been widely adopted as flexible
 models of learning and adaptation, but their use in cultural and social modeling
 often remains opaque due to tightly coupled implementations and implicit
 optimization dynamics.
@@ -57,9 +57,12 @@ constraints rather than raw model capacity.
 PlaceEmotion-GAN differs from general-purpose GAN libraries (e.g., 
 PyTorch-GAN) in its explicit focus on theoretical exploration rather 
 than image generation. While agent-based cultural evolution simulators 
-such as ... focus on ..., this package provides an adversarial 
-framework that models the tension between exploration and exploitation 
-in learning dynamics.
+typically model discrete agent interactions and social learning rules, 
+this package provides an adversarial framework that models the continuous 
+tension between exploration and exploitation in learning dynamics. 
+The explicit λ-scheduling mechanism distinguishes PlaceEmotion-GAN from 
+standard GAN implementations where optimization dynamics are typically 
+implicit and difficult to interpret theoretically.
 
 # Software description
 
