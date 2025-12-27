@@ -125,15 +125,21 @@ analysis.
 
 # Ongoing research
 
-The framework is currently being applied to investigate emotional 
-dynamics in cultural transmission contexts, with preliminary results 
-to be presented at the Workshop on Cultural Transmission Processes 
-(WCTP 2025).
+The framework has been applied to investigate emotional dynamics in cultural
+transmission contexts. Results obtained using this software were presented at
+the Workshop on Cultural Transmission Processes (WCTP 2025).
+
 
 # Acknowledgements
 
 The author thanks colleagues in cultural evolution and computational social
 science for discussions that motivated the explicit treatment of temporal
 trade-offs in learning dynamics.
+
+This work was supported by the Japan Society for the Promotion of Science
+(JSPS) KAKENHI Grant-in-Aid for Early-Career Scientists, “Elucidating the
+emotional relationship between speech and place using an evolutionary
+approach” (Grant Number JP24K16071; FY2024–FY2026).
+
 
 # References
