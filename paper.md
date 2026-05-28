@@ -127,7 +127,8 @@ analysis.
 
 The framework has been applied to investigate emotional dynamics in cultural
 transmission contexts. Results obtained using this software were presented at
-the Workshop on Cultural Transmission Processes (WCTP 2025).
+the Workshop on Computation: Theory and Practice (WCTP 2025) and published in
+its proceedings (Onohara & Ouchi, 2026; DOI: 10.2991/978-94-6239-638-8_25).
 
 
 # Acknowledgements
