@@ -4,7 +4,7 @@ PlaceEmotion-GAN is a Python package for simulating cultural dynamics and
 emotional niche construction using a λ-scheduled generative adversarial
 framework.
 
-This repository accompanies the JOSS paper:
+This repository includes the accompanying manuscript (`paper.md`):
 *“PlaceEmotion-GAN: A simulation-based GAN framework for modeling cultural
 dynamics via λ-scheduling”*.
 
@@ -94,7 +94,8 @@ If you use this software, please cite the accompanying paper:
 
 ```text
 Onohara, A. (2025). PlaceEmotion-GAN: A simulation-based GAN framework for
-modeling cultural dynamics via λ-scheduling. Journal of Open Source Software.
+modeling cultural dynamics via λ-scheduling. GitHub repository,
+https://github.com/aonoa68/cultural-dynamics-gan
 ```
 
 ```
