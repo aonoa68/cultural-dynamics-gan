@@ -1,7 +1,7 @@
 # train.py
 # -*- coding: utf-8 -*-
 """
-Minimal-yet-solid training loop (simulation) for PlaceEmotion-GAN JOSS package.
+Minimal-yet-solid training loop (simulation) for the PlaceEmotion-GAN package.
 - Reproduces λ scheduling dynamics over T steps.
 - Generates dummy adv_loss and feature_reward with controlled stochasticity.
 - Logs to CSV; optionally saves PNG curves if matplotlib is available.
